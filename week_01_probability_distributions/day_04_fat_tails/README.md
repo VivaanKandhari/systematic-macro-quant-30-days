@@ -10,12 +10,5 @@ Large market crashes are not as rare as naive bell-curve models suggest. This ma
 
 ## Mini Project
 
-Build a Fat Tail Detector comparing actual extreme days against normal-model expectations.
+Built a Fat Tail Detector comparing actual extreme days against normal-model expectations.
 
-Run:
-
-```bash
-python week_01_probability_distributions/day_04_fat_tails/day_04_fat_tail_detector.py
-```
-
-The script prints a clean table and saves QQ-plots under `outputs/`.
