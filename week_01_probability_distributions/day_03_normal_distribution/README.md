@@ -23,7 +23,3 @@ Build an HSI Risk Probability Calculator that compares normal-model probabilitie
 
 The fitted normal distribution may describe ordinary days reasonably well, but it can underestimate downside tail risk in equity markets.
 
-## GitHub Value
-
-GitHub-able with medium-high portfolio value if presented as a mini research note.
-
