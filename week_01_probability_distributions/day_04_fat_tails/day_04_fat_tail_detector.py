@@ -20,9 +20,10 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import yfinance as yf
 from scipy.stats import kurtosis, norm, probplot
+from tabulate import tabulate
 
 try:
-    from IPython.display import display
+    from IPython.display import display, HTML
 except ImportError:
     display = None
 
@@ -34,6 +35,7 @@ TICKERS = {
 
 PERIOD = "5y"
 SIGMA_THRESHOLD = 3
+OUTPUT_DIR = Path(__file__).resolve().parent / "outputs"
 
 
 data = yf.download(
@@ -93,48 +95,82 @@ for asset in returns.columns:
         "Danger ratio": danger_ratio,
     })
 
-results = pd.DataFrame(results)
+results_df = pd.DataFrame(results)
 
-display_results = pd.DataFrame({
-    "Asset": results["Asset"],
-    "Kurtosis": results["Kurtosis"].map(lambda x: f"{x:.2f}"),
-    "Excess Kurtosis": results["Excess Kurtosis"].map(lambda x: f"{x:.2f}"),
-    "Actual 3σ Days": results["Actual 3-sigma days"].map(lambda x: f"{x:.0f}"),
-    "Expected 3σ Days": results["Expected 3-sigma days under normal"].map(lambda x: f"{x:.1f}"),
-    "Actual Freq": results["Actual 3-sigma frequency"].map(lambda x: f"{x:.2%}"),
-    "Normal Freq": results["Normal 3-sigma frequency"].map(lambda x: f"{x:.2%}"),
-    "Danger Ratio": results["Danger ratio"].map(lambda x: f"{x:.1f}x"),
-})
+# Create clean display table
+display_data = []
+for _, row in results_df.iterrows():
+    display_data.append([
+        row["Asset"],
+        f"{row['Kurtosis']:.2f}",
+        f"{row['Excess Kurtosis']:.2f}",
+        f"{row['Actual 3-sigma days']:.0f}",
+        f"{row['Expected 3-sigma days under normal']:.1f}",
+        f"{row['Actual 3-sigma frequency']:.2%}",
+        f"{row['Normal 3-sigma frequency']:.2%}",
+        f"{row['Danger ratio']:.1f}x",
+    ])
 
-print("Fat Tail Detector")
-print("3-sigma events = returns below -3 sigma or above +3 sigma")
+headers = [
+    "Asset",
+    "Kurtosis",
+    "Excess Kurt",
+    "Actual 3σ Days",
+    "Expected 3σ Days",
+    "Actual Freq",
+    "Normal Freq",
+    "Danger Ratio"
+]
 
-if display is not None:
-    display(display_results)
-else:
-    print(display_results.to_string(index=False))
+print("\n" + "="*100)
+print("FAT TAIL DETECTOR: Do Markets Have Fatter Tails Than Normal Distribution Predicts?")
+print("="*100 + "\n")
 
-print("\nConclusion Summary")
+print(tabulate(display_data, headers=headers, tablefmt="grid"))
 
-for _, row in results.iterrows():
+print("\n" + "="*100)
+print("INTERPRETATION")
+print("="*100 + "\n")
+
+for _, row in results_df.iterrows():
+    asset = row["Asset"]
+    expected = row["Expected 3-sigma days under normal"]
+    actual = row["Actual 3-sigma days"]
+    danger = row["Danger ratio"]
+    
+    print(f"{asset}:")
+    print(f"  • Normal model predicted:  {expected:.1f} extreme days over 5 years")
+    print(f"  • Actually observed:       {actual:.0f} extreme days")
+    print(f"  • Reality vs. Normal:      {danger:.1f}x MORE dangerous than expected")
     print()
-    print(
-        f"{row['Asset']}: normal distribution predicted "
-        f"{row['Expected 3-sigma days under normal']:.1f} extreme days. "
-        f"Actual: {row['Actual 3-sigma days']:.0f} days. "
-        f"The market was {row['Danger ratio']:.1f}x more dangerous than "
-        "the naive normal model suggested."
-    )
 
-fig, axes = plt.subplots(1, 2, figsize=(13, 5))
+print("="*100)
+print("CONCLUSION")
+print("="*100)
+print("""
+Markets exhibit FAT TAILS. Extreme moves happen much more frequently than
+a normal distribution would predict. This means:
+
+✓ Risk models assuming normal distribution significantly underestimate crash risk
+✓ Leverage and oversized positions are riskier than naive statistics suggest
+✓ Quant strategies must account for tail events and correlation breakdowns
+""")
+print("="*100 + "\n")
+
+# Generate visualization
+OUTPUT_DIR.mkdir(exist_ok=True)
+
+fig, axes = plt.subplots(1, 2, figsize=(14, 5))
 
 for ax, asset in zip(axes, returns.columns):
     r = returns[asset].dropna()
     probplot(r, dist="norm", plot=ax)
-    ax.set_title(f"{asset} QQ-Plot vs Normal")
-    ax.grid(True)
+    ax.set_title(f"{asset}: QQ-Plot vs Normal Distribution", fontsize=12, fontweight="bold")
+    ax.grid(True, alpha=0.3)
 
 plt.tight_layout()
+plt.savefig(OUTPUT_DIR / "qq_plots_vs_normal.png", dpi=150, bbox_inches="tight")
+print(f"✓ Chart saved to: {OUTPUT_DIR / 'qq_plots_vs_normal.png'}")
 plt.show()
 
 # Final interpretation:
