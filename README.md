@@ -1,4 +1,4 @@
-# 30-Day Systematic Macro Quant Research Series
+# 30-Day Systematic Macro Quant (BEGINNER - VERY BASIC FOUNDATION) Research Series
 
 A 30-day systematic macro quant learning series which I am doing, built around real financial market data, Python, and research-style mini-projects.
 
