@@ -9,3 +9,4 @@ arch
 scikit-learn
 requests
 tabulate
+tabulate

@@ -21,5 +21,6 @@ pip install -r requirements.txt
 - [x] Day 3: Normal Distribution & The Bell Curve Assumption
 - [x] Day 4: Fat Tails & Why Normal Distribution Fails Markets
 - [x] Day 5: Skewness & Asymmetric Returns
+- [x] Day 6: Correlation - The Most Important Stat in Macro
 
 Future days will be added after each lesson is completed.

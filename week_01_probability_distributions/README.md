@@ -13,6 +13,7 @@ This week starts with random variables, expected value, volatility, and normal d
 - Day 3: Normal Distribution & The Bell Curve Assumption
 - Day 4: Fat Tails & Why Normal Distribution Fails Markets
 - Day 5: Skewness & Asymmetric Returns
+- Day 6: Correlation - The Most Important Stat in Macro
 
 Future days will be added after completion.
 
