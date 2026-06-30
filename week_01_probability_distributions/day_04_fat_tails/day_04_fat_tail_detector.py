@@ -15,6 +15,7 @@
 # bell curve suggests.
 
 from pathlib import Path
+import sys
 
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -54,7 +55,14 @@ reverse_names = {
 
 prices = prices.rename(columns=reverse_names)
 
-returns = prices.pct_change(fill_method=None).dropna()
+# Handle pandas version compatibility for pct_change
+# pandas < 2.0 uses fill_method parameter
+# pandas >= 2.0 deprecated fill_method
+try:
+    returns = prices.pct_change(fill_method=None).dropna()
+except TypeError:
+    # pandas >= 2.0
+    returns = prices.pct_change().dropna()
 
 results = []
 
