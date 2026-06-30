@@ -14,7 +14,7 @@
 # the market has fat tails. Extreme events happen more often than the naive
 # bell curve suggests.
 
-!pip install yfinance -q
+from pathlib import Path
 
 import matplotlib.pyplot as plt
 import pandas as pd
