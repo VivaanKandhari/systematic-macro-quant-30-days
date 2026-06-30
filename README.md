@@ -16,9 +16,10 @@ pip install -r requirements.txt
 
 ## Progress
 
-- Day 1: Random Variables & Expected Value
-- Day 2: Variance, Volatility & Why They Matter
-- Day 3: Normal Distribution & The Bell Curve Assumption
-- Day 4: Fat Tails & Why Normal Distribution Fails Markets
+- [x] Day 1: Random Variables & Expected Value
+- [x] Day 2: Variance, Volatility & Why They Matter
+- [x] Day 3: Normal Distribution & The Bell Curve Assumption
+- [x] Day 4: Fat Tails & Why Normal Distribution Fails Markets
+- [x] Day 5: Skewness & Asymmetric Returns
 
 Future days will be added after each lesson is completed.

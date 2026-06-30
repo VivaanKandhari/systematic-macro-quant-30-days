@@ -4,7 +4,7 @@ Core idea:
 
 > Financial markets are uncertain, so quants model distributions of outcomes rather than single predictions.
 
-This week starts with random variables, expected value, volatility, and normal distributions. Later days will add fat tails, skewness, correlation, and a capstone distribution profile of Hong Kong markets.
+This week starts with random variables, expected value, volatility, and normal distributions. Later days add fat tails, skewness, correlation, and a capstone distribution profile of Hong Kong markets.
 
 ## Days
 
@@ -12,6 +12,7 @@ This week starts with random variables, expected value, volatility, and normal d
 - Day 2: Variance, Volatility & Why They Matter
 - Day 3: Normal Distribution & The Bell Curve Assumption
 - Day 4: Fat Tails & Why Normal Distribution Fails Markets
+- Day 5: Skewness & Asymmetric Returns
 
 Future days will be added after completion.
 
