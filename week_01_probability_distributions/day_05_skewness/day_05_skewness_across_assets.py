@@ -33,6 +33,7 @@ TICKERS = {
     "USD": "UUP",
     "Bitcoin": "BTC-USD",
 }
+
 PERIOD = "5y"
 TRADING_DAYS = 252
 OUTPUT_DIR = Path(__file__).resolve().parent / "outputs"
@@ -64,25 +65,67 @@ def print_clean_table(table: pd.DataFrame) -> None:
     print(border)
 
 
+def download_close_prices(tickers: dict[str, str], period: str) -> pd.DataFrame:
+    """
+    Download each ticker separately.
+
+    This is more reliable than one large multi-ticker download because yfinance
+    can occasionally return one broken column, which then creates NaN-only
+    output for that asset.
+    """
+    price_series = {}
+
+    for asset, ticker in tickers.items():
+        data = yf.download(
+            ticker,
+            period=period,
+            auto_adjust=True,
+            progress=False,
+        )
+
+        if data.empty:
+            print(f"WARNING: No data downloaded for {asset} ({ticker})")
+            continue
+
+        close = data["Close"]
+
+        # yfinance sometimes returns a one-column DataFrame even for one ticker.
+        if isinstance(close, pd.DataFrame):
+            close = close.iloc[:, 0]
+
+        close = close.dropna()
+        close.name = asset
+
+        if close.empty:
+            print(f"WARNING: Close prices empty after cleaning for {asset} ({ticker})")
+            continue
+
+        price_series[asset] = close
+
+    if not price_series:
+        raise RuntimeError("No valid price data downloaded for any asset.")
+
+    return pd.DataFrame(price_series)
+
+
 def main() -> None:
     OUTPUT_DIR.mkdir(exist_ok=True)
 
-    data = yf.download(
-        list(TICKERS.values()),
-        period=PERIOD,
-        auto_adjust=True,
-        progress=False,
-    )
-    prices = data["Close"]
+    prices = download_close_prices(TICKERS, PERIOD)
 
-    reverse_names = {symbol: name for name, symbol in TICKERS.items()}
-    prices = prices.rename(columns=reverse_names)
-    returns = prices.pct_change(fill_method=None).dropna(how="all")
+    print("\nMissing price values by asset:")
+    print(prices.isna().sum().to_string())
+
+    returns = prices.pct_change(fill_method=None)
 
     rows = []
 
-    for asset in TICKERS:
+    for asset in prices.columns:
         r = returns[asset].dropna()
+
+        if r.empty:
+            print(f"WARNING: Skipping {asset}: no valid return data")
+            continue
 
         rows.append(
             {
@@ -95,6 +138,9 @@ def main() -> None:
                 "Best Day": r.max(),
             }
         )
+
+    if not rows:
+        raise RuntimeError("No valid return data available after cleaning.")
 
     results = pd.DataFrame(rows).sort_values("Skewness")
 
@@ -129,17 +175,14 @@ def main() -> None:
         "Its upside tail was the most asymmetric in this sample."
     )
 
-    # Research interpretation:
-    # Kurtosis tells us whether extreme moves happen unusually often. Skewness
-    # tells us whether those extreme moves lean more toward losses or gains.
-    # Negative skew is especially important for portfolio survival because it
-    # means rare bad days are larger than rare good days.
-
     fig, axes = plt.subplots(3, 2, figsize=(13, 10))
     axes = axes.flatten()
 
-    for ax, asset in zip(axes, TICKERS):
+    valid_assets = list(results["Asset"])
+
+    for ax, asset in zip(axes, valid_assets):
         r = returns[asset].dropna()
+
         ax.hist(r, bins=60, alpha=0.75, edgecolor="white")
         ax.axvline(0, color="black", linestyle="--", linewidth=1)
         ax.set_title(asset)
@@ -147,18 +190,12 @@ def main() -> None:
         ax.set_ylabel("Frequency")
         ax.grid(True, alpha=0.35)
 
-    for ax in axes[len(TICKERS):]:
+    for ax in axes[len(valid_assets):]:
         ax.axis("off")
 
     plt.tight_layout()
     plt.savefig(OUTPUT_DIR / "asset_return_skewness_histograms.png", dpi=150)
     plt.show()
-
-    # Conclusion:
-    # A crisis-aware macro investor should not only ask which asset has the
-    # highest return or volatility. The direction of the tail matters. Assets
-    # with strongly negative skew can look acceptable most days, then deliver
-    # unusually large losses when conditions break.
 
 
 if __name__ == "__main__":
