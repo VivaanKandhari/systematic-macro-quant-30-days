@@ -27,6 +27,10 @@ The script prints clean tables for data coverage and the correlation matrix, sav
 python week_01_probability_distributions/day_06_correlation/day_06_macro_correlation_dashboard.py
 ```
 
+```bash
+python week_01_probability_distributions/day_06_correlation/day_06_rolling_correlation.py
+```
+
 ## Interpretation
 
 Use the dashboard to answer:
