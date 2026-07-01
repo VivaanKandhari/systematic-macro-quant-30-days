@@ -1,0 +1,56 @@
+#Rolling Correlation
+
+import yfinance as yf
+import pandas as pd
+import matplotlib.pyplot as plt
+
+tickers = {
+    "HSI": "^HSI",
+    "S&P 500": "^GSPC",
+}
+
+data = yf.download(
+    list(tickers.values()),
+    period="5y",
+    auto_adjust=True
+)
+
+prices = data["Close"]
+
+reverse_names = {
+    "^HSI": "HSI",
+    "^GSPC": "S&P 500",
+}
+
+prices = prices.rename(columns=reverse_names)
+
+returns = prices.pct_change().dropna()
+
+rolling_corr = returns["HSI"].rolling(60).corr(returns["S&P 500"])
+
+plt.figure(figsize=(12, 6))
+plt.plot(rolling_corr, label="60-day rolling correlation: HSI vs S&P 500")
+
+plt.axvspan(
+    pd.Timestamp("2020-02-01"),
+    pd.Timestamp("2020-04-30"),
+    color="red",
+    alpha=0.2,
+    label="COVID crash"
+)
+
+plt.axhline(0, color="black", linewidth=1)
+plt.axhline(0.5, color="gray", linestyle="--", linewidth=1, label="0.5 correlation")
+
+plt.title("Rolling Correlation: HSI vs S&P 500")
+plt.ylabel("Correlation")
+plt.xlabel("Date")
+plt.legend()
+plt.grid(True)
+plt.show()
+
+#The 60-day rolling correlation between HSI and S&P 500 was unstable, ranging from slightly negative to moderately positive. 
+#This suggests HSI and US equities do not have a fixed relationship; their connection changes across regimes. 
+#Correlation rose during some periods, meaning global risk sentiment sometimes dominated, but it also fell near zero or negative during periods where local China/Hong Kong factors likely mattered more.
+# Because the chart uses only 5 years of data, the COVID shaded region is not actually covered by the rolling correlation series.
+#Mid-2023 appears to be a regime where global equity risk appetite dominated local market differences, causing HSI and S&P 500 daily returns to become more synchronized.
